@@ -16,8 +16,12 @@
  *
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const ldrawPath = './';
 const materialsFileName = 'LDConfig.ldr';
+const apiKey = process.env.API_KEY;
 
 
 import fs from 'fs';
@@ -309,8 +313,6 @@ async function parseObject( fileName, isRoot ) {
 
 async function fetchLDrawValue(partId) {
 	const url = `https://rebrickable.com/api/v3/lego/parts/?bricklink_id=`;
-
-	const apiKey = "9a9d3630b9b9c7fda74c03ae58899bf8";
 
 	const stdId1 = partId.replace(/bpb/g, 'pb');
 
