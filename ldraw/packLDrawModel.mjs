@@ -367,5 +367,3 @@ async function fetchLDrawValue(partId) {
 		console.error('Error:', error);
 	}
 }
-
-// random comment
