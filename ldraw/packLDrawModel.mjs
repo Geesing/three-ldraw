@@ -8,6 +8,8 @@
  * - Download your desired model file and place in the ldraw/models/ subfolder.
  *
  * - Place this script also in ldraw/
+ * 
+ * - Create .env file in ldraw/ with the variable API_KEY="yourRebrickableAPIKey"
  *
  * - Issue command 'node packLDrawModel models/<modelFileName>'
  *
