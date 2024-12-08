@@ -21,7 +21,7 @@ dotenv.config();
 
 const ldrawPath = './';
 const materialsFileName = 'LDConfig.ldr';
-const apiKey = process.env.API_KEY;
+const API_KEY = process.env.API_KEY;
 
 
 import fs from 'fs';
@@ -321,7 +321,7 @@ async function fetchLDrawValue(partId) {
 	try {
 		let response = await fetch(url + stdId1, {
 			headers: {
-					'Authorization': `key ${apiKey}`
+					'Authorization': `key ${API_KEY}`
 				}
 		});
 		let data = await response.json();
@@ -332,7 +332,7 @@ async function fetchLDrawValue(partId) {
 			// Make a second fetch request to url + stdId2 if the first one fails
 			response = await fetch(url + stdId2, {
 				headers: {
-					'Authorization': `key ${apiKey}`
+					'Authorization': `key ${API_KEY}`
 				}
 			});
 			data = await response.json();
