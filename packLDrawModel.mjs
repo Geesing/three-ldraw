@@ -23,7 +23,6 @@ const ldrawPath = './';
 const materialsFileName = 'LDConfig.ldr';
 const API_KEY = process.env.API_KEY;
 
-
 import fs from 'fs';
 import path from 'path';
 
@@ -50,6 +49,7 @@ packLDrawModel().catch(err => {
 	}
 })
 
+// Main function
 async function packLDrawModel() {
 	const materialsFilePath = path.join( ldrawPath, materialsFileName );
 
@@ -79,6 +79,8 @@ async function packLDrawModel() {
 	console.log( 'Done.' );
 }
 
+// Recursively append referenced dependencies to eventual output
+// This function returns a standardized version of the given fileName.
 async function parseObject( fileName, isRoot ) {
 
 	// Returns the located path for fileName or null if not found
@@ -148,24 +150,34 @@ async function parseObject( fileName, isRoot ) {
 
 					} catch ( e ) {
 
+						// Referenced part not in any of the library's folders/prefixes
+						// This often happens with printed parts, which lack standard IDs
 						prefix = '';
 
 						const validExtensions = ['.ldr', '.dat', '.mpd'];
 
+						// If the referenced part is not the model itself, but a part file:
 						if ( !isRoot && 
 							attempt === 1 && 
 							validExtensions.some(ext => originalFileName.endsWith(ext))) {
 
-							const partId = originalFileName.match(/([a-zA-Z0-9]+)(?=\.[a-zA-Z0-9]+$)/)[1];
+							// Get alphanumeric part file name without extension
+							const partId = path.parse(originalFileName).name;
 
-							const ldraw = await fetchLDrawValue(partId);
+							// Fetch any equivalent lDrawId
+							const lDrawId = await fetchLDrawValue(partId);
 
-							if (!ldraw) {
+							// If no equivalent lDrawId was found:
+							if (!lDrawId) {
+								// Default to the base numeric part ID
+								// If the piece had prints, this defaults it back to unprinted
 								fileName = partId.match(/\d+/) + '.dat';
 							} else {
-								fileName = ldraw + '.dat';
+								// Use compatible lDrawId
+								fileName = lDrawId + '.dat';
 							}
 
+							// Recursively parse part file's dependencies, get standardized name
 							fileName = await parseObject(fileName, false);
 
 							return fileName;
@@ -310,12 +322,14 @@ async function parseObject( fileName, isRoot ) {
 
 }
 
-
+// Attempt to fetch LDraw part IDs equivalent to Bricklink IDs
 async function fetchLDrawValue(partId) {
 	const url = `https://rebrickable.com/api/v3/lego/parts/?bricklink_id=`;
 
+	// Standardize any print headers
 	const stdId1 = partId.replace(/bpb/g, 'pb');
 
+	// Remove leading zeroes from print headers
 	const stdId2 = stdId1.replace(/(\d+)(?!.*\d)/, '0$1');
 
 	try {
@@ -325,6 +339,7 @@ async function fetchLDrawValue(partId) {
 				}
 		});
 		let data = await response.json();
+		// Try matching LDraw ID entry using standardized print header
 		try {
 			const lDrawValue = data.results[0].external_ids.LDraw[0];
 			return lDrawValue;
@@ -336,12 +351,16 @@ async function fetchLDrawValue(partId) {
 				}
 			});
 			data = await response.json();
+			// Try matching LDraw ID entry with leading zero removed
 			try {
 				const lDrawValue = data.results[0].external_ids.LDraw[0];
 				return lDrawValue;
 			} catch (error) {
+				// Unable to find equivalent LDraw ID
 				console.warn(`Warning: part ${partId} not supported by LDraw. File may not render correctly.`);
 				unsupportedParts.push(partId);
+
+				return null;
 			}
 		}
 	} catch (error) {
