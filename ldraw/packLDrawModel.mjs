@@ -331,7 +331,7 @@ async function fetchLDrawValue(partId) {
 	// Standardize any print headers
 	const stdId1 = partId.replace(/bpb/g, 'pb');
 
-	// Remove leading zeroes from print headers
+	// Remove leading zero from print headers
 	const stdId2 = stdId1.replace(/(\d+)(?!.*\d)/, '0$1');
 
 	try {
